@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PII Redactor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+
+
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let particlesArray = [];
+    const numberOfParticles = 1000;
+    const mouse = {
+      x: null,
+      y: null,
+      radius: 100
+    };
+    
+    // Adjust canvas size
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Mouse movement detection
+    window.addEventListener('mousemove', function(event) {
+      mouse.x = event.x;
+      mouse.y = event.y;
+    });
+    
+    // Create particle class
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 100 + 1;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.density = Math.random() * 30 + 1;
+        this.color = color;
+      }
+      
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+      }
+    
+      update() {
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let forceDirectionX = dx / distance;
+        let forceDirectionY = dy / distance;
+        let maxDistance = mouse.radius;
+        let force = (maxDistance - distance) / maxDistance;
+        let directionX = forceDirectionX * force * this.density;
+        let directionY = forceDirectionY * force * this.density;
+    
+        if (distance < mouse.radius) {
+          this.x -= directionX;
+          this.y -= directionY;
+        } else {
+          if (this.x !== this.baseX) {
+            let dx = this.x - this.baseX;
+            this.x -= dx / 10;
+          }
+          if (this.y !== this.baseY) {
+            let dy = this.y - this.baseY;
+            this.y -= dy / 10;
+          }
+        }
+    
+        // Move the particles slightly
+        //this.x += Math.random() * 2 - 1;
+        //this.y += Math.random() * 2 - 1;
+        this.draw();
+      }
+    }
+    
+    // Initialize particles
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < numberOfParticles; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const color = y < canvas.height / 2 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 0, 0, 0.1)'; // Orange top, green bottom
+        particlesArray.push(new Particle(x, y, color));
+      }
+    }
+    initParticles();
+    
+    // Animation loop
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    
+
+    let trailParticlesArray = []; // New array for mouse trail particles
+
+     // Mouse movement detection
+     window.addEventListener('mousemove', function(event) {
+      mouse.x = event.x;
+      mouse.y = event.y;
+      createTrailParticles();
+    });
+
+    // Create mouse trail particle class
+    class TrailParticle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 10 + 1;
+        this.color = Math.random() > 0.5 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)'; // Orange or Green
+        this.velocityX = (Math.random() * 2 - 1) * 0.5;
+        this.velocityY = (Math.random() * 2 - 1) * 0.5;
+        this.life = 0;
+        this.maxLife = 50 + Math.random() * 50;
+      }
+
+      update() {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        this.size *= 0.95; // Shrinking effect
+        this.life++;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+    
+
+
+
+
+    // Create mouse trail particles
+    function createTrailParticles() {
+      const trailParticle = new TrailParticle(mouse.x + 5, mouse.y + -20);
+      trailParticlesArray.push(trailParticle);
+    }
+
+    // Animation loop
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Animate background particles
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+      }
+
+      // Animate mouse trail particles and remove old ones
+      trailParticlesArray = trailParticlesArray.filter(p => p.life < p.maxLife);
+      trailParticlesArray.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+
+      requestAnimationFrame(animateParticles);
+    }
+
+    animateParticles();
+  </script>
+
+   <!-- Header Bar -->
+   <header class="header-bar">
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='images/ind3.png') }}" alt="Logo" class="logo">
+    </div>
+    <div class="heading">
+      <h1>PII REDACTOR</h1>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="about-btn">ABOUT US</button>
+      <button class="nav-btn" id="contact-btn">CONTACT US</button>
+    </div>
+  </header>
+  <!-- File Upload Section -->
+  <section class="upload-section">
+    <div class="upload-box">
+      <form id="fileUploadForm" enctype="multipart/form-data" method="POST" action="/upload">
+        <section class="browse-section">
+          <input type="file" id="fileInput" name="file" style="display: none;">
+          <button type="button" id="browseFileBtn">BROWSE FILE</button>
+          <span id="fileName">No file chosen</span>
+        </section>
+        <div class="drop-zone" id="dropZone">OR DROP YOUR FILE HERE</div>
+        <div class="button-container">
+          <button type="button" id="processFileBtn">PROCESS FILE</button>
+          <span id="statusName">STATUS NULL</span>
+          <!-- <button id="downloadBtn" type="button" disabled>DOWNLOAD</button> -->
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Info Panels -->
+  <div class="info-panel" id="about-panel">
+    <p>WE ARE PROTON RIDERS.</p>
+  </div>
+  <div class="info-panel2" id="contact-panel">
+    <p>EMAIL ID: vishwa.viravasundaram@gmail.com
+       EMAIL ID: ascharya.rajeev@gmail.com
+    </p>
+  </div>
+  <div class="info-panel3" id="instruction-panel">
+    <h2>How to Use the PII Redactor</h2>
+    <p>Follow these steps to redact PII from your PDF:</p>
+    <ul>
+      <li><strong>Browse or Drop File:</strong> Click the "BROWSE FILE" button to select a file, or drag and drop a file into the drop zone.</li>
+      <li><strong>Check PII:</strong> Click the "PROCESS FILE" button to start the processing.</li>
+      <li><strong>Wait for Processing:</strong> The application will process the file. Please wait for the operation to complete.</li>
+      <li><strong>After Processing:</strong> The file will open on a new tab, and it will also be stored locally.</li>
+    </ul>
+  </div>
+
+  <button class="nav1-btn" id="inst-btn">INSTRUCT</button>
+
+  <script>
+    // Handle file input change
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById('fileName').textContent = file.name;
+      } else {
+        document.getElementById('fileName').textContent = 'No file chosen';
+      }
+    });
+
+    // Handle browse button click
+    document.getElementById('browseFileBtn').addEventListener('click', function() {
+      document.getElementById('fileInput').click();
+    });
+
+    // Handle drag and drop events
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', function(event) {
+      event.preventDefault();
+      dropZone.classList.add('dragging');
+    });
+    dropZone.addEventListener('dragleave', function(event) {
+      dropZone.classList.remove('dragging');
+    });
+    dropZone.addEventListener('drop', function(event) {
+      event.preventDefault();
+      dropZone.classList.remove('dragging');
+
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        document.getElementById('fileInput').files = event.dataTransfer.files;
+        document.getElementById('fileName').textContent = file.name;
+      }
+    });
+
+    // Handle form submission for processing
+document.getElementById('processFileBtn').addEventListener('click', function() {
+    const form = document.getElementById('fileUploadForm');
+    const formData = new FormData(form);
+
+    // Change status to "PROCESSING" when the button is clicked
+    const statusName = document.getElementById('statusName');
+    statusName.textContent = "PROCESSING";
+    statusName.style.color = "white"; // Reset to default color
+
+    fetch('/upload', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Change status to "PROCESSED" and make it green
+        statusName.textContent = "PROCESSED";
+        statusName.style.color = "green";
+
+        // Open the processed PDF in a new tab
+        const pdfUrl = data.file_url;
+        window.open(pdfUrl, '_blank');
+      } else {
+        alert('Processing failed');
+        statusName.textContent = "PROCESS FAILED";
+        statusName.style.color = "red";
+      }
+    })
+    .catch(error => {
+      console.error('Error processing file:', error);
+      statusName.textContent = "FAILED";
+      statusName.style.color = "red";
+    });
+});
+  </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+train: C:\Users\vishw\OneDrive\Desktop\Detection\train\images
+val: C:\Users\vishw\OneDrive\Desktop\Detection\val\images
+
+
+# Optional: number of classes and names
+nc: 3  # Number of classes
+names: ['aadhaar', 'drivinglicence', 'pan']  # Class names
