@@ -1,4 +1,4 @@
-# Personally-Identifiable-Information-Redactor
+
 # 🛡️ PII Redactor – AI-Powered Document Privacy Protection
 
 An AI-powered document privacy solution that automatically detects and redacts Personally Identifiable Information (PII) from uploaded documents using a custom-trained YOLOv8 model. This project demonstrates how government portals can integrate real-time PII detection and redaction into document upload and download workflows to enhance citizen privacy and data security.
@@ -166,7 +166,6 @@ http://127.0.0.1:5000
 ## 🔮 Future Enhancements
 
 * OCR-based text detection and redaction
-* Aadhaar, PAN, Driving License, and Passport recognition
 * Secure metadata removal
 * Audit logging and compliance reporting
 * Batch document processing
